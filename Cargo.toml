@@ -1,0 +1,19 @@
+[package]
+name = "rivabot-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+twitch-irc = { version = "5.0.1", features = [ "refreshing-token-rustls-native-roots" ] }
+dotenvy = "0.15.7"
+tokio = { version = "1", features = [ "full" ] }
+sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "postgres", "macros" ] }
+async-trait = "0.1.73"
+toml = { version = "0.8.2", features = [ "parse" ] }
+serde = { version = "1.0.188", features = [ "derive" ] }
+chrono = "0.4.31"
+toml-datetime-compat = { version = "0.2.0", features = [ "chrono", "serde_with" ] }
+serde_with = "3.3.0"
+

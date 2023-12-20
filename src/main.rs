@@ -1,19 +1,21 @@
-use rivabot_rs::bot::RivaBot;
-
-use std::{
-    env,
-    error::Error,
-    process::exit,
+use rivabot_rs::{
+    bot::{
+        RivaBot,
+        RivaBotSettings
+    },
+    RivaDB,
+    RivaUser,
 };
-use dotenvy;
+
+use std::process::exit;
 
 #[tokio::main]
-pub async fn main() -> Result<(), Box<dyn Error>> {
-    dotenvy::dotenv()?;
-    let client_id = env::var("CLIENT_ID")?;
-    let client_secret = env::var("CLIENT_SECRET")?;
+async fn main() {
+    let settings = RivaBotSettings::new();
+    let db = RivaDB::new();
+    let user = RivaUser::new();
 
-    let rivabot = RivaBot::new(&client_id, &client_secret);
+    let rivabot = RivaBot::new(settings, db, user).await;
 
     if let Err(run) = rivabot.run().await {
         eprintln!("Error running rivabot: {run}");
@@ -22,4 +24,3 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-

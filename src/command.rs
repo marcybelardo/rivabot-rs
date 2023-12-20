@@ -1,6 +1,8 @@
-use twitch_irc::message::{ServerMessage, PrivmsgMessage};
+use sqlx::{postgres::PgPool, Error};
+use twitch_irc::message::ServerMessage;
 
 pub struct RivaCommand {
+    pub id: i32,
     pub command_text: String,
     pub description: Option<String>,
 }
@@ -8,28 +10,38 @@ pub struct RivaCommand {
 impl RivaCommand {
     pub fn new() -> Self {
         Self {
+            id: 500,
             command_text: String::new(),
             description: None,
         }
     }
 
-    pub fn get_reply(&self, message: &ServerMessage) -> Option<String> {
+    pub async fn get_reply(&self, pool: &PgPool, message: &ServerMessage) -> Result<String, Error> {
         match message {
             ServerMessage::Privmsg(msg) => {
-                if let Some(response) = Self::parse_private_message(msg) {
-                    Some(response.to_owned())
-                } else {
-                    None
-                }
-            },
-            _ => None,
-        }
-    }
+                println!("MESSAGE TEXT: {}", &msg.message_text);
+                let command = sqlx::query_as!(
+                    RivaCommand,
+                    r#"
+                        SELECT id, command_text, description
+                        FROM commands
+                        WHERE command_text = $1
+                    "#,
+                    &msg.message_text
+                )
+                .fetch_one(pool)
+                .await?;
 
-    fn parse_private_message(priv_msg: &PrivmsgMessage) -> Option<&str> {
-        match priv_msg.message_text.as_ref() {
-            "!hello" => Some("Hi there <3"),
-            _ => None,
+                let reply = sqlx::query!(
+                    "SELECT response_text FROM responses WHERE command_id = $1",
+                    command.id
+                )
+                .fetch_one(pool)
+                .await?;
+
+                Ok(reply.response_text)
+            }
+            _ => Err(Error::RowNotFound),
         }
     }
 }

@@ -1,9 +1,10 @@
-pub mod bot;
 mod auth;
+pub mod bot;
 mod command;
-mod database;
+mod db;
+mod user;
 
 pub use auth::*;
 pub use command::*;
-pub use database::*;
-
+pub use db::*;
+pub use user::*;
